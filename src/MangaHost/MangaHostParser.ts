@@ -136,3 +136,25 @@ export const parseHomeSections = ($: CheerioStatic, sections: HomeSection[], sec
 
     for (const section of sections) sectionCallBack(section)
 }
+
+export const parseSearch = ($: CheerioStatic): MangaTile[] => {
+    const results = $('main table.table-search tbody tr').toArray()
+    const mangas: MangaTile[] = []
+
+    for (const result of results) {
+        const td = $('td', result).first()
+        const id: string = $('a', td).attr('href')?.split('/').pop() ?? ''
+        const image: string = $('img', td).attr('src') ?? ''
+        const title: string = $('a', td).attr('title') ?? ''
+        const subtitle: string = $('span.muted', result).text()
+
+        mangas.push(createMangaTile({
+            id,
+            image,
+            title: createIconText({ text: title }),
+            subtitleText: createIconText({ text: subtitle})
+        }))
+    }
+
+    return mangas
+}
