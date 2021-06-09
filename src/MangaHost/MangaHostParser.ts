@@ -1,9 +1,11 @@
 import {
     Chapter,
     ChapterDetails,
+    HomeSection,
     LanguageCode,
     Manga,
     MangaStatus,
+    MangaTile,
     Tag,
     TagSection
 } from 'paperback-extensions-common'
@@ -109,4 +111,28 @@ export const parseChapterDetails = ($: CheerioStatic, mangaId: string, chapterId
         pages,
         longStrip: false
     })
+}
+
+export const parseHomeSections = ($: CheerioStatic, sections: HomeSection[], sectionCallBack: (section: HomeSection) => void ): void => {
+    for (const section of sections) sectionCallBack(section)
+    
+    // Destaques - Featured
+    const featuredManga: MangaTile[] = []
+    const featuredMangasPanel = $('section#destaques .manga-block').toArray()
+    for (const element of featuredMangasPanel) {
+        const anchor = $('a', element).first()
+        const id: string = anchor.attr('href')?.split('/').pop() ?? ''
+        const image: string = $('img', anchor).attr('src') ?? ''
+        const title: string = anchor.attr('title') ?? ''
+
+        featuredManga.push(createMangaTile({
+            id,
+            image,
+            title: createIconText({text: title})
+        }))
+    }
+
+    sections[0].items = featuredManga
+
+    for (const section of sections) sectionCallBack(section)
 }
