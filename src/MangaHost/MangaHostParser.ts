@@ -1,4 +1,7 @@
 import {
+    Chapter,
+    ChapterDetails,
+    LanguageCode,
     Manga,
     MangaStatus,
     Tag,
@@ -65,5 +68,45 @@ export const parseMangaDetails = ($: CheerioStatic, mangaId: string): Manga => {
         views,
         relatedIds,
         lastUpdate
+    })
+}
+
+export const parseChapters = ($: CheerioStatic, mangaId: string): Chapter[] => {
+
+    const elements = $('article section .chapters .cap').toArray()
+    const chapters: Chapter[] = []
+
+    for (let chapter of elements) {
+        const id: string = $('.tags a', chapter).attr('href')?.split('/').pop() ?? ''
+        const name: string = $('a.btn-caps', chapter).attr('title')?.split('-')[0].trim() ?? ''
+        const chapNum: number = Number($('a.btn-caps', chapter).text())
+        
+        if (Number.isNaN(chapNum)) continue;
+
+        chapters.push(createChapter({
+            id,
+            mangaId,
+            name,
+            langCode: LanguageCode.PORTUGUESE,
+            chapNum
+        }))
+    }
+    return chapters
+}
+
+export const parseChapterDetails = ($: CheerioStatic, mangaId: string, chapterId: string): ChapterDetails => {
+    const pages: string[] = []
+
+    const allPages = $('div#slider a').toArray()
+
+    for (let page of allPages) {
+        pages.push($('img', page).attr('src') ?? '')
+    }
+
+    return createChapterDetails({
+        id: chapterId,
+        mangaId: mangaId,
+        pages,
+        longStrip: false
     })
 }
