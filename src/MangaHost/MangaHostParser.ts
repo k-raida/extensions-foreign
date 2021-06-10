@@ -10,6 +10,10 @@ import {
     TagSection
 } from 'paperback-extensions-common'
 
+import {
+    getMetaInfo,
+    getAlternativeTitles
+} from './utils'
 
 export const parseMangaDetails = ($: CheerioStatic, mangaId: string): Manga => {
     const imagePanel = $('div.box-content.box-perfil div.w-row div.w-col-3')
@@ -20,15 +24,14 @@ export const parseMangaDetails = ($: CheerioStatic, mangaId: string): Manga => {
 
     const id: string = mangaId
     const title: string = $('.title', infoPanel).text()
-    const nativeTitle: string = $('.subtitle', infoPanel).text()
-    const titles: string[] = [title, nativeTitle]
+    const titles: string[] = [title].concat(getAlternativeTitles($('.subtitle', infoPanel).text()))
     const image: string = $('.widget img', imagePanel).attr('src') ?? ''
     const rating: number = Number($('.stars h3', ratingPanel).text())
     const status: MangaStatus = $('.subtitle strong', infoPanel).text().toUpperCase() == 'ATIVO' ? MangaStatus.ONGOING : MangaStatus.COMPLETED
     const langFlag = 'pt-br'
     const langName = 'Portuguese'
-    const artist: string = metaPanel.children('li').eq(4).children('div').text()
-    const author: string = metaPanel.children('li').eq(3).children('div').text()
+    const artist: string = getMetaInfo(metaPanel.children('li').eq(3).children('div').text())
+    const author: string = getMetaInfo(metaPanel.children('li').eq(2).children('div').text())
     const avgRating: number = rating
     const desc: string = $('.text .paragraph p', infoPanel).first().text()
     const tags: TagSection[] = []
