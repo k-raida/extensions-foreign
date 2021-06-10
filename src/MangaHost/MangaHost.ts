@@ -14,7 +14,7 @@ import {
     parseChapterDetails,
     parseMangaDetails,
     parseSearch
-} from './MangaHostParser';
+} from './MangaHostParser'
 
 const MANGAHOST_DOMAIN = 'https://mangahosted.com'
 const method = 'GET'

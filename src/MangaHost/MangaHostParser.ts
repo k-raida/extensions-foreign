@@ -11,14 +11,15 @@ import {
 } from 'paperback-extensions-common'
 
 import {
+    getAlternativeTitles,
+    getLastUpdate,
     getMetaInfo,
-    getAlternativeTitles
 } from './utils'
 
 export const parseMangaDetails = ($: CheerioStatic, mangaId: string): Manga => {
     const imagePanel = $('div.box-content.box-perfil div.w-row div.w-col-3')
     const infoPanel = $('div.box-content.box-perfil div.w-row div.w-col-7 article')
-    const metaPanel = $('article .text div.w-row .w-col', infoPanel).first().children('ul')
+    const metaPanel = $('.text div.w-row .w-col', infoPanel).first().children('ul')
     const ratingPanel = $('div.box-content.box-perfil div.w-row div.w-col-2 .classificacao-box-1')
 
 
@@ -29,22 +30,18 @@ export const parseMangaDetails = ($: CheerioStatic, mangaId: string): Manga => {
     const rating: number = Number($('.stars h3', ratingPanel).text())
     const status: MangaStatus = $('.subtitle strong', infoPanel).text().toUpperCase() == 'ATIVO' ? MangaStatus.ONGOING : MangaStatus.COMPLETED
     const langFlag = 'pt-br'
-    const langName = 'Portuguese'
+    const langName = 'Brazilian Portuguese'
     const artist: string = getMetaInfo(metaPanel.children('li').eq(3).children('div').text())
     const author: string = getMetaInfo(metaPanel.children('li').eq(2).children('div').text())
-    const avgRating: number = rating
-    const desc: string = $('.text .paragraph p', infoPanel).first().text()
+    const desc: string = $('.text .paragraph p', infoPanel).first().text().trim()
     const tags: TagSection[] = []
-    const views: number = Number($('div:nth-child(2)', ratingPanel).text().split(' ')[0])
     const relatedIds: string[] = $('#recomendamos .content-lancamento', imagePanel).toArray()
         .map(elem => $('a', elem).attr('href')?.split('/').pop() ?? '')
 
-    const lastChapterMeta: string = $("section .chapters .cap", infoPanel).first().children('.pop-content small').text()
-    const lastUpdate: string = lastChapterMeta.slice(lastChapterMeta.indexOf('Adicionado em '))
-
+    const lastUpdate: string = getLastUpdate($("section .chapters .cap div.pop-content small", infoPanel).first().text())
 
     // build tags
-    const tagList: Tag[] = $('.tags a', infoPanel).toArray()
+    const tagList: Tag[] = $('.tags a.tag', infoPanel).toArray()
         .map(elem => $(elem).text())
         .map(tag => createTag({
             id: tag,
@@ -57,6 +54,10 @@ export const parseMangaDetails = ($: CheerioStatic, mangaId: string): Manga => {
         tags: tagList
     }))
 
+    const views: number = Number($('div:nth-child(2)', ratingPanel).text().split(' ')[0])
+    console.log('debug: ', $('div:nth-child(2)', ratingPanel).text())
+    console.log('debug: ', $('div:nth-child(2)', ratingPanel).text().split(' '))
+
     return createManga({
         id,
         titles,
@@ -67,7 +68,6 @@ export const parseMangaDetails = ($: CheerioStatic, mangaId: string): Manga => {
         langName,
         artist,
         author,
-        avgRating,
         desc,
         tags,
         views,
