@@ -20,7 +20,6 @@ describe('MangaHost Tests', function () {
             artist: 'Roh-en, Yukikasa',
             status: 1,
             rating: 4.84,
-            views: 14798,
             tags: [
                 'acao', 
                 'aventura',
@@ -37,6 +36,46 @@ describe('MangaHost Tests', function () {
                 'abyss-calling-mh36226',
                 'aka-akatoshitachi-no-monogatari-mh60019',
                 'ankoku-kishi-monogatari-yuusha-wo-taosu-tameni-maou-ni-shoukansaremashita-novel-mh29350'
+            ],
+            chapters: [
+                {
+                    id: '1',
+                    mangaId: 'tono-no-kanri-o-shite-miyou-mh17734',
+                    name: 'Capítulo 1',
+                    chapNum: 1,
+                    time: new Date('Jul 07, 2019 00:00:00')
+                }
+            ]
+        },
+        {
+            id: 'shingeki-no-kyojin-attack-on-titan-mh20253',
+            image: 'https://img-host.filestatic1.xyz/mangas_files/shingeki-no-kyojin-attack-on-titan/image_shingeki-no-kyojin-attack-on-titan_full.jpg',
+            titles: ['Shingeki no Kyojin (Attack on Titan)', '進撃の巨人', 'Attack on Titan'],
+            author: 'Hajime Isayama',
+            artist: 'Hajime Isayama',
+            status: 0,
+            rating: 4.13,
+            tags: [
+                'acao',
+                'drama',
+                'fantasia',
+                'horror',
+                'misterio',
+                'shounen',
+                'sobrenatural',
+                'super poderes'
+            ],
+            desc: 'Várias centenas de anos atrás, os humanos quase foram exterminados por Titãs. Os Titãs têm vários andares de altura, parecem não ter inteligência, devoram seres humanos e, o pior de tudo, parecem fazer isso pelo prazer e não como fonte de alimento.Avancemos para o presente e a cidade não viu um Titã há mais de 100 anos. O adolescente Eren e sua irmã adotiva Mikasa testemunham algo terrível quando as muralhas da cidade são destruídas por um super Titã que surge de lugar nenhum. Enquanto os Titãs menores inundam a cidade, as duas crianças assistem horrorizadas sua mãe ser comida viva. Eren jura que ele irá matar todos os Titãs e se vingar por toda a humanidade.',
+            lastUpdate: 'Apr 07, 2021',
+            relatedIds: ['shingeki-no-kyojin-volume-0-mh41418'],
+            chapters: [
+                {
+                    id: '1',
+                    mangaId: 'shingeki-no-kyojin-attack-on-titan-mh20253',
+                    name: 'Capítulo 1',
+                    chapNum: 1,
+                    time: new Date('Feb 18, 2013 00:00:00')
+                }
             ]
         }
     ]
@@ -51,41 +90,14 @@ describe('MangaHost Tests', function () {
 
     const randomManga = mangas[randomNumber]
     
-    var mangaId = randomManga.id
+    const mangaId = randomManga.id
 
     it('Retrieve Manga Details', async () => {
-        let details = await wrapper.getMangaDetails(source, mangaId)
+        const details = await wrapper.getMangaDetails(source, mangaId)
         expect(details, "No results found with test-defined ID [" + mangaId + "]").to.exist
 
-        let data = details
-
-        expect(data.id, "Missing ID").to.be.not.empty
-        expect(data.id).to.equal(randomManga.id)
-
-        expect(data.image, "Missing Image").to.be.not.empty
-        expect(data.image).to.equal(randomManga.image)
-    
-        expect(data.status, "Missing Status").to.exist
-        expect(data.status).to.equal(randomManga.status)
-
-        expect(data.author, "Missing Author").to.be.not.empty
-        expect(data.author).to.equal(randomManga.author)
-
-        expect(data.desc, "Missing Description").to.be.not.empty
-        expect(data.desc).to.equal(randomManga.desc)
-        
-        expect(data.titles, "Missing Titles").to.be.not.empty
-        expect(data.titles).to.deep.equal(randomManga.titles)
-
-        expect(data.rating, "Missing Rating").to.exist
-        expect(data.rating).to.equal(randomManga.rating)
-        
-        expect(data.lastUpdate, "Missing Last Update").to.exist
-        expect(data.lastUpdate).to.equal(randomManga.lastUpdate)
-
+        const data = details
         const tags: string[] = data.tags?.length == 1 ? data.tags[0].tags.map(tag => tag.label) : []
-        expect(data.tags, "Missing Tags").to.exist
-        expect(tags, "Tags doesn't match").to.deep.equal(randomManga.tags)
 
         console.info(logTest(data.id, randomManga.id))
         console.info(logTest(data.image, randomManga.image))
@@ -97,32 +109,81 @@ describe('MangaHost Tests', function () {
         console.info(logTest(data.artist, randomManga.artist))
         console.info(logTest(data.desc, randomManga.desc))
         console.info(logTest(tags, randomManga.tags))
+
+        expect(data.id, "Missing ID").to.be.not.empty
+        expect(data.id, "ID doesn't match").to.equal(randomManga.id)
+
+        expect(data.image, "Missing Image").to.be.not.empty
+        expect(data.image, "Image doesn't match").to.equal(randomManga.image)
+    
+        expect(data.status, "Missing Status").to.exist
+        expect(data.status, "Status doesn't match").to.equal(randomManga.status)
+
+        expect(data.author, "Missing Author").to.be.not.empty
+        expect(data.author, "Author doesn't match").to.equal(randomManga.author)
+
+        expect(data.desc, "Missing Description").to.be.not.empty
+        expect(data.desc, "Description doesnt match").to.equal(randomManga.desc)
         
+        expect(data.titles, "Missing Titles").to.be.not.empty
+        expect(data.titles, "Titles doesn't match").to.deep.equal(randomManga.titles)
+
+        expect(data.rating, "Missing Rating").to.exist
+        expect(data.rating, "Rating doesn't match").to.equal(randomManga.rating)
+        
+        expect(data.lastUpdate, "Missing Last Update").to.exist
+        expect(data.lastUpdate, "Last Update doesn't match").to.equal(randomManga.lastUpdate)
+
+        expect(data.tags, "Missing Tags").to.exist
+        expect(tags, "Tags doesn't match").to.deep.equal(randomManga.tags)
+
     })
 
     it("Get Chapters", async () => {
-        let data = await wrapper.getChapters(source, mangaId);
+        const data = await wrapper.getChapters(source, mangaId);
 
         expect(data, "No chapters present for: [" + mangaId + "]").to.not.be.empty;
 
-        let entry = data[0]
-        expect(entry.id, "No ID present").to.not.be.empty;
-        // expect(entry.time, "No date present").to.exist
-        expect(entry.name, "No title available").to.not.be.empty
-        expect(entry.chapNum, "No chapter number present").to.exist
-    })
+        const chapter = data[data.length - 1]
+        const testChapter = randomManga.chapters[0]
 
+        console.log(logTest(chapter.id, testChapter.id))
+        console.log(logTest(chapter.mangaId, testChapter.mangaId))
+        console.log(logTest(chapter.name, testChapter.name))
+        console.log(logTest(chapter.chapNum, testChapter.chapNum))
+        console.log(logTest(chapter.time, testChapter.time))
+
+
+        expect(chapter.id, "No ID present").to.not.be.empty
+        expect(chapter.id, "Chapter ID doesn't match").to.equal(testChapter.id)
+
+        expect(chapter.mangaId, "No Manga ID present").to.not.be.empty
+        expect(chapter.mangaId, "Manga ID doesn't match").to.equal(testChapter.mangaId)
+        
+        expect(chapter.name, "No title available").to.not.be.empty
+        expect(chapter.name, "Chapter title doesn't match").to.equal(testChapter.name)
+
+        expect(chapter.chapNum, "No chapter number present").to.exist
+        expect(chapter.chapNum, "Chapter Number doesn't match").to.equal(testChapter.chapNum)
+
+        expect(chapter.time, "No date present").to.exist
+        expect(chapter.time, "Time doesn't match").to.deep.equal(testChapter.time)
+
+    })
+    
     it("Get Chapter Details", async () => {
 
-        let chapters = await wrapper.getChapters(source, mangaId);
-        let data = await wrapper.getChapterDetails(source, mangaId, chapters[0].id);
+        const chapters = await wrapper.getChapters(source, mangaId);
+        const chapter = await wrapper.getChapterDetails(source, mangaId, chapters[0].id);
 
-        expect(data, "No server response").to.exist;
-        expect(data, "Empty server response").to.not.be.empty;
+        expect(chapter, "No server response").to.exist;
+        expect(chapter, "Empty server response").to.not.be.empty;
 
-        expect(data.id, "Missing ID").to.be.not.empty;
-        expect(data.mangaId, "Missing MangaID").to.be.not.empty;
-        expect(data.pages, "No pages present").to.be.not.empty;
+        expect(chapter.id, "Missing ID").to.be.not.empty;
+        expect(chapter.mangaId, "Missing MangaID").to.be.not.empty;
+        expect(chapter.pages, "No pages present").to.be.not.empty;
+
+        expect(chapter.mangaId, "Manga ID doesn't match").to.equal(randomManga.id)
     })
 
 })
