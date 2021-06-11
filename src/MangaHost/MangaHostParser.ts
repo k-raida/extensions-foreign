@@ -12,8 +12,9 @@ import {
 
 import {
     getAlternativeTitles,
-    getLastUpdate,
+    getChapterDate,
     getMetaInfo,
+    getTagSection,
 } from './utils'
 
 export const parseMangaDetails = ($: CheerioStatic, mangaId: string): Manga => {
@@ -31,28 +32,11 @@ export const parseMangaDetails = ($: CheerioStatic, mangaId: string): Manga => {
     const artist: string = getMetaInfo(metaPanel.children('li').eq(3).children('div').text())
     const author: string = getMetaInfo(metaPanel.children('li').eq(2).children('div').text())
     const desc: string = $('article .text .paragraph p').first().text().trim()
-    const tags: TagSection[] = []
-    const relatedIds: string[] = $('#recomendamos .content-lancamento').toArray()
-        .map(elem => $('a', elem).attr('href')?.split('/').pop() ?? '')
-
-    const lastUpdate: string = getLastUpdate($("article section .chapters .cap div.pop-content small").first().text())
-
-    // build tags
-    const tagList: Tag[] = $('article .tags a.tag').toArray()
-        .map(elem => $(elem).text())
-        .map(tag => createTag({
-            id: tag,
-            label: tag
-        }))
-
-    tags.push(createTagSection({
-        id: 'mangahost-tags',
-        label: 'Gêneros',
-        tags: tagList
-    }))
-
-    let views: number = Number($('.classificacao-box-1 div:nth-child(2)').text().split(' ')[0])
-
+    const tags: TagSection[] = getTagSection($, $('article .tags a.tag').toArray())
+    const relatedIds: string[] = $('#recomendamos .content-lancamento').toArray().map(elem => $('a', elem).attr('href')?.split('/').pop() ?? '')
+    const lastUpdate: string = getChapterDate($("article section .chapters .cap div.pop-content small").first().text())
+    const views: number = Number($('.classificacao-box-1 div:nth-child(2)').text().split(' ')[0])
+    
     return createManga({
         id,
         titles,
@@ -78,17 +62,20 @@ export const parseChapters = ($: CheerioStatic, mangaId: string): Chapter[] => {
 
     for (let chapter of elements) {
         const id: string = $('.tags a', chapter).attr('href')?.split('/').pop() ?? ''
-        const name: string = $('a.btn-caps', chapter).attr('title')?.split('-')[0].trim() ?? ''
+        const name: string = $('a.btn-caps', chapter).attr('title')?.split('-')[0].trim().replace('#', '') ?? ''
         const chapNum: number = Number($('a.btn-caps', chapter).text())
+
+        const time: Date = new Date(getChapterDate($('div.pop-content small', chapter).text()))
         
-        if (Number.isNaN(chapNum)) continue;
+        // if (Number.isNaN(chapNum)) continue;
 
         chapters.push(createChapter({
             id,
             mangaId,
             name,
+            chapNum,
             langCode: LanguageCode.PORTUGUESE,
-            chapNum
+            time
         }))
     }
     return chapters
