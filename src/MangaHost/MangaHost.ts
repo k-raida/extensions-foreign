@@ -1,6 +1,7 @@
 import {
     Chapter,
     ChapterDetails,
+    HomeSection,
     Manga,
     PagedResults,
     SearchRequest, 
@@ -12,16 +13,19 @@ import {
 import {
     parseChapters,
     parseChapterDetails,
+    parseHomeSections,
     parseMangaDetails,
     parseSearch
 } from './MangaHostParser'
+
+import { HomeSectionType } from './utils'
 
 const MANGAHOST_DOMAIN = 'https://mangahosted.com'
 const method = 'GET'
 const headers = {
     referer: MANGAHOST_DOMAIN
 }
- 
+
 export const MangaHostInfo: SourceInfo = {
     version: '0.1.0',
     name: 'MangaHost',
@@ -32,6 +36,10 @@ export const MangaHostInfo: SourceInfo = {
     hentaiSource: false,
     websiteBaseURL: MANGAHOST_DOMAIN,
     sourceTags: [
+        {
+            text: "Beta",
+            type: TagType.YELLOW
+        },
         {
             text: 'Portuguese',
             type: TagType.GREY
@@ -70,6 +78,7 @@ export class MangaHost extends Source {
         const request = createRequestObject({
             url: `${MANGAHOST_DOMAIN}/manga/`,
             method,
+            headers,
             param: mangaId
         })
 
@@ -83,6 +92,7 @@ export class MangaHost extends Source {
         const request = createRequestObject({
             url: `${MANGAHOST_DOMAIN}/manga/`,
             method,
+            headers,
             param: mangaId
         })
 
@@ -106,6 +116,27 @@ export class MangaHost extends Source {
         return parseChapterDetails($, mangaId, chapterId)
     }
 
+    async getHomePageSections(sectionCallback: (section: HomeSection) => void): Promise<void> {
+        const mainHomeSections: HomeSection[] = [
+            createHomeSection({id: HomeSectionType.FEATURED, title: 'DESTAQUES' }),
+            createHomeSection({id: HomeSectionType.LATEST, title: 'ÚLTIMAS ATUALIZAÇÕES' }),
+            createHomeSection({id: HomeSectionType.RECOMMENDED, title: 'RECOMENDAMOS' }),
+            createHomeSection({id: HomeSectionType.WEEK, title: 'MANGÁ DA SEMANA' })
+        ]
+   
+        const request = createRequestObject({
+            url: MANGAHOST_DOMAIN,
+            method,
+            headers
+        })
+
+        const response = await this.requestManager.schedule(request, 2)
+        const $ = this.cheerio.load(response.data)
+
+        parseHomeSections($, mainHomeSections, sectionCallback)
+
+    }
+
     async searchRequest(query: SearchRequest, metadata: any): Promise<PagedResults> {
         const request = createRequestObject({
             url: `${MANGAHOST_DOMAIN}/find/`,
@@ -116,7 +147,7 @@ export class MangaHost extends Source {
 
         const response = await this.requestManager.schedule(request, 1)
         const $ = this.cheerio.load(response.data)
-
+        
         const mangas = parseSearch($)
 
         return createPagedResults({

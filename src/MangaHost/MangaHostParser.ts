@@ -7,7 +7,7 @@ import {
     MangaStatus,
     MangaTile,
     Tag,
-    TagSection
+    TagSection,
 } from 'paperback-extensions-common'
 
 import {
@@ -15,6 +15,8 @@ import {
     getChapterDate,
     getMetaInfo,
     getTagSection,
+    getWeekMangaImage,
+    HomeSectionType,
 } from './utils'
 
 export const parseMangaDetails = ($: CheerioStatic, mangaId: string): Manga => {
@@ -100,24 +102,31 @@ export const parseChapterDetails = ($: CheerioStatic, mangaId: string, chapterId
 
 export const parseHomeSections = ($: CheerioStatic, sections: HomeSection[], sectionCallBack: (section: HomeSection) => void ): void => {
     for (const section of sections) sectionCallBack(section)
-    
-    // Destaques - Featured
-    const featuredManga: MangaTile[] = []
-    const featuredMangasPanel = $('section#destaques .manga-block').toArray()
-    for (const element of featuredMangasPanel) {
-        const anchor = $('a', element).first()
-        const id: string = anchor.attr('href')?.split('/').pop() ?? ''
-        const image: string = $('img', anchor).attr('src') ?? ''
-        const title: string = anchor.attr('title') ?? ''
 
-        featuredManga.push(createMangaTile({
-            id,
-            image,
-            title: createIconText({text: title})
-        }))
+    for (const section of sections) {
+
+        switch(section.id) {
+            case HomeSectionType.FEATURED: {
+                section.items = parseFeaturedManga($, $('#destaques .manga-block').toArray())
+                break;
+            }
+            case HomeSectionType.LATEST: {
+                section.items = parseLatestManga($, $('#dados .column-img').toArray())
+                break;
+            }
+            case HomeSectionType.RECOMMENDED: {
+                section.items = parseRecommendedManga($, $('#recomendamos .column-img').toArray())
+                break;
+            }
+            case HomeSectionType.WEEK: {
+                section.items = parseWeekManga($, $('#dica .widget-content').toArray())
+                break;
+            }
+            default: {
+                break;
+            }
+        }    
     }
-
-    sections[0].items = featuredManga
 
     for (const section of sections) sectionCallBack(section)
 }
@@ -142,4 +151,84 @@ export const parseSearch = ($: CheerioStatic): MangaTile[] => {
     }
 
     return mangas
+}
+
+
+const parseFeaturedManga = ($: CheerioStatic, elements: CheerioElement[]): MangaTile[] => {
+    const mangas: MangaTile[] = []
+
+    for (const element of elements) {
+        const anchor = $('a', element).first()
+        const id: string = anchor.attr('href')?.split('/').pop() ?? ''
+        const image: string = $('img', anchor).attr('src') ?? ''
+        const title: string = anchor.attr('title') ?? ''
+
+        mangas.push(createMangaTile({
+            id,
+            image,
+            title: createIconText({text: title})
+        }))
+    }
+
+    return mangas
+}
+
+const parseLatestManga = ($: CheerioStatic, elements: CheerioElement[]): MangaTile[] => {
+    const mangas: MangaTile[] = []
+
+    for (const element of elements) {
+        const id: string = $('a', element).first().attr('href')?.split('/').pop() ?? ''
+        const image: string = $('a img', element).first().attr('src') ?? ''
+        const title: string = $('a', element).first().attr('title')?.trim() ?? ''
+
+        mangas.push(createMangaTile({
+            id,
+            image,
+            title: createIconText({text: title})
+        }))
+    }
+
+    return mangas
+}
+
+const parseRecommendedManga = ($: CheerioStatic, elements: CheerioElement[]): MangaTile[] => {
+    const mangas: MangaTile[] = []
+
+    for (const element of elements) {
+        const id: string = $('a', element).first().attr('href')?.split('/').pop() ?? ''
+        const image: string = $('a img', element).first().attr('src') ?? ''
+        const title: string = $('a', element).first().attr('title')?.trim() ?? ''
+
+        mangas.push(createMangaTile({
+            id,
+            image,
+            title: createIconText({text: title})
+        }))
+    }
+
+    return mangas
+}
+
+const parseWeekManga = ($: CheerioStatic, elements: CheerioElement[]): MangaTile[] => {
+    const mangas: MangaTile[] = []
+
+    for (const element of elements) {
+        const id: string = $('a', element).first().attr('href')?.split('/').pop() ?? ''
+        const image: string = getWeekMangaImage($('a img', element).first().attr('src') ?? '')
+        const title: string = $('a', element).first().attr('title')?.trim() ?? ''
+
+        mangas.push(createMangaTile({
+            id,
+            image,
+            title: createIconText({text: title})
+        }))
+    }
+
+    return mangas
+}
+
+
+// should parse demografic latest mangas - SHOUNEN, SHOUJO, SEINEN
+const parseLatestCategories = ($: CheerioStatic, sections: HomeSection[], sectionCallBack: (section: HomeSection) => void ): void => {
+
 }
