@@ -1,7 +1,7 @@
 import cheerio from 'cheerio'
 import { APIWrapper, Source } from 'paperback-extensions-common'
 import { MangaHost } from '../MangaHost/MangaHost'
-import { fakeMangas } from '../MangaHost/utils'
+import { fakeMangas, HomeSectionType } from '../MangaHost/utils'
 
 describe('MangaHost Tests', function () {
 
@@ -82,6 +82,7 @@ describe('MangaHost Tests', function () {
     it("Testing Get Chapter Details", async () => {
         const chapters = await wrapper.getChapters(source, mangaId);
         const chapter = await wrapper.getChapterDetails(source, mangaId, chapters[chapters.length - 1].id);
+        
         const randomChapter = randomManga.chapters[0]
 
         expect(chapter, "No server response").to.exist;
@@ -124,5 +125,10 @@ describe('MangaHost Tests', function () {
         expect(latest, "No latest section available").to.exist
         expect(recommended, "No recommended section available").to.exist
         expect(week, "No manga of week section available").to.exist
+    })
+
+    it("Testing ViewMore aquisition", async() => {
+        let viewMore = await wrapper.getViewMoreItems(source, HomeSectionType.FEATURED, {})
+        expect(viewMore, "No response from server").to.be.not.empty;
     })
 })

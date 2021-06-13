@@ -63,13 +63,16 @@ export const parseChapters = ($: CheerioStatic, mangaId: string): Chapter[] => {
         const time: Date = new Date(getChapterDate($('div.pop-content small', chapter).text()))
 
         // if (Number.isNaN(chapNum)) continue;
+        // TODO: Need a solution to NaN cases
+        // Something like transforming extra-02
+        // into last-chapter-number.1 .2 .3 and so on
 
         chapters.push(createChapter({
             id,
             mangaId,
             name,
             chapNum,
-            langCode: LanguageCode.PORTUGUESE,
+            langCode: LanguageCode.BRAZILIAN,
             time
         }))
     }
@@ -94,35 +97,35 @@ export const parseChapterDetails = ($: CheerioStatic, mangaId: string, chapterId
 }
 
 export const parseHomeSection = ($: CheerioStatic, section: HomeSection, sectionCallback: (section: HomeSection) => void): void => {
+
     switch (section.id) {
-        case HomeSectionType.FEATURED: {
-            section.items = parseMangaTile($, $('#destaques .manga-block').toArray())
+        case HomeSectionType.FEATURED:
+            section.items = parseMangaTile($, $('#destaques .manga-block').toArray().slice(0, 7))
             break;
-        }
-        case HomeSectionType.LATEST: {
-            section.items = parseMangaTile($, $('#dados .column-img').toArray())
+
+        case HomeSectionType.LATEST: 
+            section.items = parseMangaTile($, $('#dados .column-img').toArray().slice(0, 7))
             break;
-        }
-        case HomeSectionType.RECOMMENDED: {
-            section.items = parseMangaTile($, $('#recomendamos .column-img').toArray())
+
+        case HomeSectionType.RECOMMENDED: 
+            section.items = parseMangaTile($, $('#recomendamos .column-img').toArray().slice(0, 5))
             break;
-        }
-        case HomeSectionType.WEEK: {
+
+        case HomeSectionType.WEEK: 
             section.items = parseWeekMangaTile($, $('#dica .widget-content').toArray())
             break;
-        }
-        case HomeSectionType.SHOUNEN: {
+
+        case HomeSectionType.SHOUNEN:
             section.items = parseMangaTile($, $('#recomendamos .column-img').toArray())
             break;
-        }
-        case HomeSectionType.SHOUJO: {
+
+        case HomeSectionType.SHOUJO: 
             section.items = parseMangaTile($, $('#recomendamos .column-img').toArray())
             break;
-        }
-        case HomeSectionType.SEINEN: {
+
+        case HomeSectionType.SEINEN:
             section.items = parseMangaTile($, $('#recomendamos .column-img').toArray())
             break;
-        }
     }
 
     sectionCallback(section)
@@ -148,6 +151,33 @@ export const parseSearch = ($: CheerioStatic): MangaTile[] => {
     }
 
     return mangas
+}
+
+export const parseViewMore = ($: CheerioStatic, sectionId: string): MangaTile[] => {
+    switch (sectionId) {
+        case HomeSectionType.FEATURED:
+            return parseMangaTile($, $('#destaques .manga-block').toArray())
+
+        case HomeSectionType.LATEST: 
+            return parseMangaTile($, $('#dados .column-img').toArray())
+
+        case HomeSectionType.RECOMMENDED: 
+            return parseMangaTile($, $('#recomendamos .column-img').toArray())
+
+        case HomeSectionType.WEEK: 
+            return parseWeekMangaTile($, $('#dica .widget-content').toArray())
+
+        case HomeSectionType.SHOUNEN:
+            return parseMangaTile($, $('#recomendamos .column-img').toArray())
+
+        case HomeSectionType.SHOUJO: 
+            return parseMangaTile($, $('#recomendamos .column-img').toArray())
+
+        case HomeSectionType.SEINEN:
+            return parseMangaTile($, $('#recomendamos .column-img').toArray())
+        default:
+            return []
+    }
 }
 
 const parseMangaTile = ($: CheerioStatic, elements: CheerioElement[]): MangaTile[] => {
@@ -235,4 +265,16 @@ const getWeekMangaImage = (src: string): string => {
     // src: /wp-content/themes/mangahost/img/destaque/iris-zero.jpg
     const imageName: string = src.split('/').pop()?.split('.').shift() ?? '' // get "iris-zero"
     return `https://img-host.filestatic1.xyz/mangas_files/iris-zero/image_${imageName}_xmedium.jpg`
+}
+
+/**
+ * Got this function from user PythonCoderAS
+ * https://github.com/Paperback-iOS/extensions-foreign/issues/13#issuecomment-812678764
+ */
+export const generateUserAgent = () => {
+    // This makes a random user agent (copied from my user agent).
+    // Range: Chrome/89.0.4500.100 through Chrome/89.0.5000.150
+    return `Mozilla/5.0 (Macintosh; Intel Mac OS X 11_2_3) AppleWebKit/537.36 (KHTML, like Gecko) ` +
+        `Chrome/89.0.${Math.round(Math.random() * 500 + 4500)}.${Math.round(Math.random() * 50 + 100)} ` +
+        `Safari/537.36`
 }
