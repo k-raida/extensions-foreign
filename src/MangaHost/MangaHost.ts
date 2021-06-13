@@ -34,35 +34,7 @@ export const MangaHostInfo: SourceInfo = {
     websiteBaseURL: MANGAHOST_DOMAIN,
     sourceTags: [
         {
-            text: "Beta",
-            type: TagType.YELLOW
-        },
-        {
             text: 'Portuguese',
-            type: TagType.GREY
-        },
-        {
-            text: 'Doujin',
-            type: TagType.GREY
-        },
-        {
-            text: 'Manga',
-            type: TagType.GREY
-        },
-        {
-            text: 'Manhwa',
-            type: TagType.GREY
-        },
-        {
-            text: 'Webtoon',
-            type: TagType.GREY
-        },
-        {
-            text: 'Manhua',
-            type: TagType.GREY
-        },
-        {
-            text: 'Novel',
             type: TagType.GREY
         }
     ]
@@ -111,9 +83,9 @@ export class MangaHost extends Source {
     }
 
     async getHomePageSections(sectionCallback: (section: HomeSection) => void): Promise<void> {
-        const featured = createHomeSection({id: HomeSectionType.FEATURED, title: 'DESTAQUES', view_more: true })
+        const featured = createHomeSection({id: HomeSectionType.FEATURED, title: 'DESTAQUES'})
         const latest = createHomeSection({id: HomeSectionType.LATEST, title: 'ÚLTIMAS ATUALIZAÇÕES', view_more: true })
-        const recommended = createHomeSection({id: HomeSectionType.RECOMMENDED, title: 'RECOMENDAMOS', view_more: true })
+        const recommended = createHomeSection({id: HomeSectionType.RECOMMENDED, title: 'RECOMENDAMOS'})
         const week = createHomeSection({id: HomeSectionType.WEEK, title: 'MANGÁ DA SEMANA' })
         
         const request = createRequestObject({ url: MANGAHOST_DOMAIN, method })
