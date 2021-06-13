@@ -1,8 +1,7 @@
 import cheerio from 'cheerio'
 import { APIWrapper, Source } from 'paperback-extensions-common'
 import { MangaHost } from '../MangaHost/MangaHost'
-import { logTest } from '../MangaHost/utils'
-import { fakeMangas } from '../MangaHost/utils/faker'
+import { fakeMangas } from '../MangaHost/utils'
 
 describe('MangaHost Tests', function () {
 
@@ -55,12 +54,10 @@ describe('MangaHost Tests', function () {
 
         expect(data.tags, "Missing Tags").to.exist
         expect(tags, "Tags doesn't match").to.deep.equal(randomManga.tags)
-
     })
 
     it("Testing Get Chapters", async () => {
         const data = await wrapper.getChapters(source, mangaId);
-
         expect(data, "No chapters present for: [" + mangaId + "]").to.not.be.empty;
 
         const chapter = data[data.length - 1]
@@ -80,11 +77,9 @@ describe('MangaHost Tests', function () {
 
         expect(chapter.time, "No date present").to.exist
         expect(chapter.time, "Time doesn't match").to.deep.equal(randomChapter.time)
-
     })
     
     it("Testing Get Chapter Details", async () => {
-
         const chapters = await wrapper.getChapters(source, mangaId);
         const chapter = await wrapper.getChapterDetails(source, mangaId, chapters[chapters.length - 1].id);
         const randomChapter = randomManga.chapters[0]
@@ -105,17 +100,16 @@ describe('MangaHost Tests', function () {
         const testSearch = createSearchRequest({
             title: 'Kawaii'
         });
-
+        
         const search = await wrapper.searchRequest(source, testSearch);
         const result = search.results[0]
 
         expect(result, "No response from server").to.exist;
-
         expect(result.id, "No ID found for search query").to.be.not.empty;
         expect(result.image, "No image found for search").to.be.not.empty;
         expect(result.title, "No title").to.be.not.null;
         expect(result.subtitleText, "No subtitle text").to.be.not.null;
-    });
+    })
 
     it("Testing Home-Page aquisition", async() => {
         const homePages = await wrapper.getHomePageSections(source)
@@ -131,5 +125,4 @@ describe('MangaHost Tests', function () {
         expect(recommended, "No recommended section available").to.exist
         expect(week, "No manga of week section available").to.exist
     })
-
 })

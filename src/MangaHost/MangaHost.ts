@@ -13,7 +13,7 @@ import {
 import {
     parseChapters,
     parseChapterDetails,
-    parseHomeSections,
+    parseHomeSection,
     parseMangaDetails,
     parseSearch
 } from './MangaHostParser'
@@ -22,9 +22,6 @@ import { HomeSectionType } from './utils'
 
 const MANGAHOST_DOMAIN = 'https://mangahosted.com'
 const method = 'GET'
-const headers = {
-    referer: MANGAHOST_DOMAIN
-}
 
 export const MangaHostInfo: SourceInfo = {
     version: '0.1.0',
@@ -78,7 +75,6 @@ export class MangaHost extends Source {
         const request = createRequestObject({
             url: `${MANGAHOST_DOMAIN}/manga/`,
             method,
-            headers,
             param: mangaId
         })
 
@@ -92,7 +88,6 @@ export class MangaHost extends Source {
         const request = createRequestObject({
             url: `${MANGAHOST_DOMAIN}/manga/`,
             method,
-            headers,
             param: mangaId
         })
 
@@ -106,7 +101,6 @@ export class MangaHost extends Source {
         const request = createRequestObject({
             url: `${MANGAHOST_DOMAIN}/manga/`,
             method,
-            headers,
             param: `${mangaId}/${chapterId}`
         })
 
@@ -117,31 +111,25 @@ export class MangaHost extends Source {
     }
 
     async getHomePageSections(sectionCallback: (section: HomeSection) => void): Promise<void> {
-        const mainHomeSections: HomeSection[] = [
-            createHomeSection({id: HomeSectionType.FEATURED, title: 'DESTAQUES' }),
-            createHomeSection({id: HomeSectionType.LATEST, title: 'ÚLTIMAS ATUALIZAÇÕES' }),
-            createHomeSection({id: HomeSectionType.RECOMMENDED, title: 'RECOMENDAMOS' }),
-            createHomeSection({id: HomeSectionType.WEEK, title: 'MANGÁ DA SEMANA' })
-        ]
-   
-        const request = createRequestObject({
-            url: MANGAHOST_DOMAIN,
-            method,
-            headers
-        })
-
-        const response = await this.requestManager.schedule(request, 2)
+        const featured = createHomeSection({id: HomeSectionType.FEATURED, title: 'DESTAQUES', view_more: true })
+        const latest = createHomeSection({id: HomeSectionType.LATEST, title: 'ÚLTIMAS ATUALIZAÇÕES', view_more: true })
+        const recommended = createHomeSection({id: HomeSectionType.RECOMMENDED, title: 'RECOMENDAMOS', view_more: true })
+        const week = createHomeSection({id: HomeSectionType.WEEK, title: 'MANGÁ DA SEMANA' })
+        
+        const request = createRequestObject({ url: MANGAHOST_DOMAIN, method })
+        const response = await this.requestManager.schedule(request, 1)
         const $ = this.cheerio.load(response.data)
-
-        parseHomeSections($, mainHomeSections, sectionCallback)
-
+        
+        parseHomeSection($, featured, sectionCallback)
+        parseHomeSection($, latest, sectionCallback)
+        parseHomeSection($, recommended, sectionCallback)
+        parseHomeSection($, week, sectionCallback)
     }
 
     async searchRequest(query: SearchRequest, metadata: any): Promise<PagedResults> {
         const request = createRequestObject({
             url: `${MANGAHOST_DOMAIN}/find/`,
             method,
-            headers,
             param: query.title
         })
 

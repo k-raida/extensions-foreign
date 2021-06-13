@@ -10,14 +10,7 @@ import {
     TagSection,
 } from 'paperback-extensions-common'
 
-import {
-    getAlternativeTitles,
-    getChapterDate,
-    getMetaInfo,
-    getTagSection,
-    getWeekMangaImage,
-    HomeSectionType,
-} from './utils'
+import { HomeSectionType } from './utils'
 
 export const parseMangaDetails = ($: CheerioStatic, mangaId: string): Manga => {
 
@@ -38,7 +31,7 @@ export const parseMangaDetails = ($: CheerioStatic, mangaId: string): Manga => {
     const relatedIds: string[] = $('#recomendamos .content-lancamento').toArray().map(elem => $('a', elem).attr('href')?.split('/').pop() ?? '')
     const lastUpdate: string = getChapterDate($("article section .chapters .cap div.pop-content small").first().text())
     const views: number = Number($('.classificacao-box-1 div:nth-child(2)').text().split(' ')[0])
-    
+
     return createManga({
         id,
         titles,
@@ -68,7 +61,7 @@ export const parseChapters = ($: CheerioStatic, mangaId: string): Chapter[] => {
         const chapNum: number = Number($('a.btn-caps', chapter).text())
 
         const time: Date = new Date(getChapterDate($('div.pop-content small', chapter).text()))
-        
+
         // if (Number.isNaN(chapNum)) continue;
 
         chapters.push(createChapter({
@@ -100,35 +93,39 @@ export const parseChapterDetails = ($: CheerioStatic, mangaId: string, chapterId
     })
 }
 
-export const parseHomeSections = ($: CheerioStatic, sections: HomeSection[], sectionCallBack: (section: HomeSection) => void ): void => {
-    for (const section of sections) sectionCallBack(section)
-
-    for (const section of sections) {
-
-        switch(section.id) {
-            case HomeSectionType.FEATURED: {
-                section.items = parseFeaturedManga($, $('#destaques .manga-block').toArray())
-                break;
-            }
-            case HomeSectionType.LATEST: {
-                section.items = parseLatestManga($, $('#dados .column-img').toArray())
-                break;
-            }
-            case HomeSectionType.RECOMMENDED: {
-                section.items = parseRecommendedManga($, $('#recomendamos .column-img').toArray())
-                break;
-            }
-            case HomeSectionType.WEEK: {
-                section.items = parseWeekManga($, $('#dica .widget-content').toArray())
-                break;
-            }
-            default: {
-                break;
-            }
-        }    
+export const parseHomeSection = ($: CheerioStatic, section: HomeSection, sectionCallback: (section: HomeSection) => void): void => {
+    switch (section.id) {
+        case HomeSectionType.FEATURED: {
+            section.items = parseMangaTile($, $('#destaques .manga-block').toArray())
+            break;
+        }
+        case HomeSectionType.LATEST: {
+            section.items = parseMangaTile($, $('#dados .column-img').toArray())
+            break;
+        }
+        case HomeSectionType.RECOMMENDED: {
+            section.items = parseMangaTile($, $('#recomendamos .column-img').toArray())
+            break;
+        }
+        case HomeSectionType.WEEK: {
+            section.items = parseWeekMangaTile($, $('#dica .widget-content').toArray())
+            break;
+        }
+        case HomeSectionType.SHOUNEN: {
+            section.items = parseMangaTile($, $('#recomendamos .column-img').toArray())
+            break;
+        }
+        case HomeSectionType.SHOUJO: {
+            section.items = parseMangaTile($, $('#recomendamos .column-img').toArray())
+            break;
+        }
+        case HomeSectionType.SEINEN: {
+            section.items = parseMangaTile($, $('#recomendamos .column-img').toArray())
+            break;
+        }
     }
 
-    for (const section of sections) sectionCallBack(section)
+    sectionCallback(section)
 }
 
 export const parseSearch = ($: CheerioStatic): MangaTile[] => {
@@ -146,70 +143,32 @@ export const parseSearch = ($: CheerioStatic): MangaTile[] => {
             id,
             image,
             title: createIconText({ text: title }),
-            subtitleText: createIconText({ text: subtitle})
+            subtitleText: createIconText({ text: subtitle })
         }))
     }
 
     return mangas
 }
 
-
-const parseFeaturedManga = ($: CheerioStatic, elements: CheerioElement[]): MangaTile[] => {
-    const mangas: MangaTile[] = []
-
-    for (const element of elements) {
-        const anchor = $('a', element).first()
-        const id: string = anchor.attr('href')?.split('/').pop() ?? ''
-        const image: string = $('img', anchor).attr('src') ?? ''
-        const title: string = anchor.attr('title') ?? ''
-
-        mangas.push(createMangaTile({
-            id,
-            image,
-            title: createIconText({text: title})
-        }))
-    }
-
-    return mangas
-}
-
-const parseLatestManga = ($: CheerioStatic, elements: CheerioElement[]): MangaTile[] => {
+const parseMangaTile = ($: CheerioStatic, elements: CheerioElement[]): MangaTile[] => {
     const mangas: MangaTile[] = []
 
     for (const element of elements) {
         const id: string = $('a', element).first().attr('href')?.split('/').pop() ?? ''
         const image: string = $('a img', element).first().attr('src') ?? ''
-        const title: string = $('a', element).first().attr('title')?.trim() ?? ''
+        const title: string = $('a', element).first().attr('title') ?? ''
 
         mangas.push(createMangaTile({
             id,
             image,
-            title: createIconText({text: title})
+            title: createIconText({ text: title })
         }))
     }
 
     return mangas
 }
 
-const parseRecommendedManga = ($: CheerioStatic, elements: CheerioElement[]): MangaTile[] => {
-    const mangas: MangaTile[] = []
-
-    for (const element of elements) {
-        const id: string = $('a', element).first().attr('href')?.split('/').pop() ?? ''
-        const image: string = $('a img', element).first().attr('src') ?? ''
-        const title: string = $('a', element).first().attr('title')?.trim() ?? ''
-
-        mangas.push(createMangaTile({
-            id,
-            image,
-            title: createIconText({text: title})
-        }))
-    }
-
-    return mangas
-}
-
-const parseWeekManga = ($: CheerioStatic, elements: CheerioElement[]): MangaTile[] => {
+const parseWeekMangaTile = ($: CheerioStatic, elements: CheerioElement[]): MangaTile[] => {
     const mangas: MangaTile[] = []
 
     for (const element of elements) {
@@ -220,7 +179,7 @@ const parseWeekManga = ($: CheerioStatic, elements: CheerioElement[]): MangaTile
         mangas.push(createMangaTile({
             id,
             image,
-            title: createIconText({text: title})
+            title: createIconText({ text: title })
         }))
     }
 
@@ -228,7 +187,52 @@ const parseWeekManga = ($: CheerioStatic, elements: CheerioElement[]): MangaTile
 }
 
 
-// should parse demografic latest mangas - SHOUNEN, SHOUJO, SEINEN
-const parseLatestCategories = ($: CheerioStatic, sections: HomeSection[], sectionCallBack: (section: HomeSection) => void ): void => {
+/* Utilities */
 
+const getMetaInfo = (scrapedContent: string): string => {
+    const match: string = ': '
+    const index: number = scrapedContent.lastIndexOf(match)
+    const result: string = scrapedContent.slice(index + match.length)
+    return result
+}
+
+const getAlternativeTitles = (scrapedContent: string): string[] => {
+    const ativo: number = scrapedContent.lastIndexOf('Ativo')
+    const completo: number = scrapedContent.lastIndexOf('Completo')
+    const index: number = ativo !== -1 ? ativo : completo
+    const result = scrapedContent.slice(0, index)
+
+    if (result?.includes(',')) {
+        return result.split(',').map(title => title.trim())
+    }
+
+    return [result];
+}
+
+const getChapterDate = (scrapedContent: string): string => {
+    const match: string = 'Adicionado em '
+    const index: number = scrapedContent.lastIndexOf(match)
+    const result: string = scrapedContent.slice(index + match.length)
+    return result
+}
+
+const getTagSection = ($: CheerioStatic, elements: CheerioElement[]): TagSection[] => {
+    const tagList: Tag[] = elements
+        .map(elem => $(elem).text())
+        .map(tag => createTag({
+            id: tag,
+            label: tag
+        }))
+
+    return [createTagSection({
+        id: 'mangahost-tags',
+        label: 'Gêneros',
+        tags: tagList
+    })]
+}
+
+const getWeekMangaImage = (src: string): string => {
+    // src: /wp-content/themes/mangahost/img/destaque/iris-zero.jpg
+    const imageName: string = src.split('/').pop()?.split('.').shift() ?? '' // get "iris-zero"
+    return `https://img-host.filestatic1.xyz/mangas_files/iris-zero/image_${imageName}_xmedium.jpg`
 }
